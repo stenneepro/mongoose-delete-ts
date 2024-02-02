@@ -1,5 +1,5 @@
 {
-  "name": "mongoose-soft-delete",
+  "name": "@stenneepro/mongoose-soft-delete",
   "version": "1.0.0",
   "description": "Mongoose soft delete plugin",
   "author": "Stanislav Protaschuk <stenneepro@gmail.com>",
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com/stenneepro/mongoose-soft-delete.git"
+    "url": "git+ssh://git@github.com/stenneepro/mongoose-soft-delete.git"
   },
   "keywords": [
     "mongoose",
@@ -28,7 +28,7 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/emiljanitzek/mongoose-delete-ts/issues"
+    "url": "https://github.com/stenneepro/mongoose-soft-delete/issues"
   },
   "homepage": "https://github.com/stenneepro/mongoose-soft-delete",
   "peerDependencies": {

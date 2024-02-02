@@ -10,5 +10,5 @@ jobs:
       - uses: google-github-actions/release-please-action@v4
         with:
           release-type: node
-          package-name: mongoose-soft-delete
+          package-name: @stenneepro/mongoose-soft-delete
           bootstrap-sha: 9365e75c9929a1bb5fef4908acdfe99c07b0f4d0
