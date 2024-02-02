@@ -7,8 +7,9 @@ import { expect } from 'chai';
 import { expectDeletedCount, expectMatchCount, expectOk } from './utils/mongooseExpects';
 
 type TestDeletedAt = { name: string } & Deleted & DeletedAt;
-type TestQueryHelpers = DeletedQueryHelpers<TestDeletedAt>;
-type TestDeletedAtModel = Model<TestDeletedAt, TestQueryHelpers, DeletedMethods> & DeletedStaticMethods<TestDeletedAt, TestQueryHelpers>;
+type TestQueryHelpers<T extends TestDeletedAt = TestDeletedAt> = DeletedQueryHelpers<T>;
+type TestDeletedAtModel<TRawDocType extends TestDeletedAt = TestDeletedAt> =
+	Model<TRawDocType, TestQueryHelpers<TRawDocType>, DeletedMethods> & DeletedStaticMethods<TRawDocType, TestQueryHelpers<TRawDocType>>;
 
 describe('deletedAt=true', function() {
 	let TestModel: TestDeletedAtModel;
@@ -24,12 +25,15 @@ describe('deletedAt=true', function() {
 		await dropModel('TestDeletedAt');
 	});
 
-	it('delete() -> set deletedAt', async function() {
+	it('deleteOne() -> set deletedAt', async function() {
 		const puffy = await TestModel.create({ name: 'Puffy1' });
 
-		const success = await puffy.delete();
+		const result = await puffy.deleteOne();
+		expectOk(result);
+		expectDeletedCount(result, 1);
 
-		expect(success.deletedAt).to.be.an('date');
+		const doc = await TestModel.findById(puffy.id).withDeleted().orFail();
+		expect(doc.deletedAt).to.be.an('date');
 	});
 
 	it('deleteOne() -> set deletedAt', async function() {
@@ -41,16 +45,13 @@ describe('deletedAt=true', function() {
 		expectDeletedCount(result, 1);
 
 		const puffy = await TestModel.findOne({ name: 'Puffy2' }).withDeleted().orFail();
-
 		expect(puffy.deletedAt).to.be.an('date');
 	});
 
-	it('restore() -> unset deletedAt', async function() {
+	it('restoreOne() -> unset deletedAt', async function() {
 		const puffy = await TestModel.findOne({ name: 'Puffy1' }).withDeleted().orFail();
-
-		const success = await puffy.restore();
-
-		expect(success.deletedAt).to.not.exist;
+		const doc = await puffy.restoreOne();
+		expect(doc.deletedAt).to.not.exist;
 	});
 
 	it('restoreOne() -> unset deletedAt', async function() {
@@ -60,7 +61,6 @@ describe('deletedAt=true', function() {
 		expectMatchCount(result, 1);
 
 		const puffy = await TestModel.findOne({ name: 'Puffy2' }).withDeleted().orFail();
-
 		expect(puffy.deletedAt).to.not.exist;
 	});
 });
@@ -79,21 +79,24 @@ describe('deletedAt=deleted_at', function() {
 		await dropModel('TestDeletedAtCustomField');
 	});
 
-	it('delete() -> set deletedAt', async function() {
+	it('deleteOne() -> set deletedAt', async function() {
 		const puffy = await TestModel.create({ name: 'Puffy1' });
 
-		const success = await puffy.delete();
+		const result = await puffy.deleteOne();
+		expectOk(result);
+		expectDeletedCount(result, 1);
 
-		expect(success.deletedAt).to.be.an('date');
-		expect(success.get('deleted_at')).to.be.an('date');
+		const doc = await TestModel.findById(puffy.id).withDeleted().orFail();
+		expect(doc.deletedAt).to.be.an('date');
+		expect(doc.get('deleted_at')).to.be.an('date');
 	});
 
-	it('restore() -> unset deletedAt', async function() {
+	it('restoreOne() -> unset deletedAt', async function() {
 		const puffy = await TestModel.findOne({ name: 'Puffy1' }).withDeleted().orFail();
 
-		const success = await puffy.restore();
+		const doc = await puffy.restoreOne();
 
-		expect(success.deletedAt).to.not.exist;
-		expect(success.get('deleted_at')).to.not.exist;
+		expect(doc.deletedAt).to.not.exist;
+		expect(doc.get('deleted_at')).to.not.exist;
 	});
 });

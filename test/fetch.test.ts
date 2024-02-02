@@ -7,8 +7,9 @@ import { expect } from 'chai';
 import { expectModifiedCount, expectOk, expectUpsertedCount } from './utils/mongooseExpects';
 
 type Test = { name: string } & Deleted;
-type TestQueryHelpers = DeletedQueryHelpers<Test>;
-type TestModel = Model<Test, TestQueryHelpers, DeletedMethods> & DeletedStaticMethods<Test, TestQueryHelpers>;
+type TestQueryHelpers<T extends Test = Test> = DeletedQueryHelpers<T>;
+type TestModel<TRawDocType extends Test = Test> =
+	Model<TRawDocType, TestQueryHelpers<TRawDocType>, DeletedMethods> & DeletedStaticMethods<TRawDocType, TestQueryHelpers<TRawDocType>>;
 
 describe('fetch', function() {
 	let TestModel: TestModel;
@@ -31,11 +32,6 @@ describe('fetch', function() {
 	});
 
 	describe('without deleted', function() {
-		it('count() -> returns 1 document', async function() {
-			const count = await TestModel.count();
-			expect(count).to.equal(1);
-		});
-
 		it('countDocuments() -> returns 1 document', async function() {
 			const count = await TestModel.countDocuments();
 			expect(count).to.equal(1);
@@ -116,11 +112,6 @@ describe('fetch', function() {
 	});
 
 	describe('only deleted', function() {
-		it('count() -> returns 2 document', async function() {
-			const count = await TestModel.count().onlyDeleted();
-			expect(count).to.equal(2);
-		});
-
 		it('countDocuments() -> returns 2 document', async function() {
 			const count = await TestModel.countDocuments().onlyDeleted();
 			expect(count).to.equal(2);
@@ -195,11 +186,6 @@ describe('fetch', function() {
 	});
 
 	describe('with deleted', function() {
-		it('count() -> return 3 document', async function() {
-			const count = await TestModel.count().withDeleted();
-			expect(count).to.equal(3);
-		});
-
 		it('countDocuments() -> return 3 document', async function() {
 			const count = await TestModel.countDocuments().withDeleted();
 			expect(count).to.equal(3);

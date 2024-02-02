@@ -16,10 +16,11 @@ import { expect } from 'chai';
 import { expectDeletedCount, expectMatchCount, expectOk } from './utils/mongooseExpects';
 
 type TestDeletedBy = { name: string } & Deleted & DeletedBy<Types.ObjectId>;
-type TestQueryHelpers = DeletedQueryHelpers<TestDeletedBy>;
-type TestDeletedByModel = Model<TestDeletedBy, TestQueryHelpers, DeletedMethods & DeletedByMethods<Types.ObjectId>> &
-	DeletedStaticMethods<TestDeletedBy, TestQueryHelpers> &
-	DeletedByStaticMethods<TestDeletedBy, Types.ObjectId, TestQueryHelpers>;
+type TestQueryHelpers<T extends TestDeletedBy = TestDeletedBy> = DeletedQueryHelpers<T>;
+type TestDeletedByModel<TRawDocType extends TestDeletedBy = TestDeletedBy> =
+	Model<TRawDocType, TestQueryHelpers<TRawDocType>, DeletedMethods & DeletedByMethods<Types.ObjectId, any, any, TRawDocType>> &
+	DeletedStaticMethods<TRawDocType, TestQueryHelpers<TRawDocType>> &
+	DeletedByStaticMethods<TRawDocType, Types.ObjectId, TestQueryHelpers<TRawDocType>>;
 
 describe('deletedBy=true', function() {
 	let TestModel: TestDeletedByModel;
@@ -35,13 +36,16 @@ describe('deletedBy=true', function() {
 		await dropModel('TestDeletedBy');
 	});
 
-	it('deleteByUser() -> set deletedBy', async function() {
+	it('deleteOneByUser() -> set deletedBy', async function() {
 		const puffy = await TestModel.create({ name: 'Puffy1' });
-
 		const userId = new Types.ObjectId();
-		const success = await puffy.deleteByUser(userId);
+		const result = await puffy.deleteOneByUser(userId);
 
-		expect(success.deletedBy).to.deep.equal(userId);
+		expectOk(result);
+		expectDeletedCount(result, 1);
+
+		const doc = await TestModel.findById(puffy.id).withDeleted().orFail();
+		expect(doc.deletedBy).to.deep.equal(userId);
 	});
 
 	it('deleteOneByUser() -> set deletedBy', async function() {
@@ -54,16 +58,13 @@ describe('deletedBy=true', function() {
 		expectDeletedCount(result, 1);
 
 		const puffy = await TestModel.findOne({ name: 'Puffy2' }).withDeleted().orFail();
-
 		expect(puffy.deletedBy).to.deep.equal(userId);
 	});
 
-	it('restore() -> unset deletedBy', async function() {
+	it('restoreOne() -> unset deletedBy', async function() {
 		const puffy = await TestModel.findOne({ name: 'Puffy1' }).withDeleted().orFail();
-
-		const success = await puffy.restore();
-
-		expect(success.deletedBy).to.not.exist;
+		const doc = await puffy.restoreOne();
+		expect(doc.deletedBy).to.not.exist;
 	});
 
 	it('restoreOne() -> unset deletedBy', async function() {
@@ -73,7 +74,6 @@ describe('deletedBy=true', function() {
 		expectMatchCount(result, 1);
 
 		const puffy = await TestModel.findOne({ name: 'Puffy2' }).withDeleted().orFail();
-
 		expect(puffy.deletedBy).to.not.exist;
 	});
 });
@@ -92,23 +92,25 @@ describe('deletedBy=deleted_by', function() {
 		await dropModel('TestDeletedByCustomField');
 	});
 
-	it('deleteByUser() -> set deletedBy', async function() {
+	it('deleteOneByUser() -> set deletedBy', async function() {
 		const puffy = await TestModel.create({ name: 'Puffy1' });
-
 		const userId = new Types.ObjectId();
-		const success = await puffy.deleteByUser(userId);
+		const result = await puffy.deleteOneByUser(userId);
 
-		expect(success.deletedBy).to.deep.equal(userId);
-		expect(success.get('deleted_by')).to.deep.equal(userId);
+		expectOk(result);
+		expectDeletedCount(result, 1);
+
+		const doc = await TestModel.findById(puffy.id).withDeleted().orFail();
+		expect(doc.deletedBy).to.deep.equal(userId);
+		expect(doc.get('deleted_by')).to.deep.equal(userId);
 	});
 
-	it('restore() -> unset deletedAt', async function() {
+	it('restoreOne() -> unset deletedAt', async function() {
 		const puffy = await TestModel.findOne({ name: 'Puffy1' }).withDeleted().orFail();
+		const doc = await puffy.restoreOne();
 
-		const success = await puffy.restore();
-
-		expect(success.deletedBy).to.not.exist;
-		expect(success.get('deleted_by')).to.not.exist;
+		expect(doc.deletedBy).to.not.exist;
+		expect(doc.get('deleted_by')).to.not.exist;
 	});
 });
 
@@ -133,21 +135,23 @@ describe('deletedBy custom schema', function() {
 		await dropModel('TestDeletedByCustomSchema');
 	});
 
-	it('deleteByUser() -> set deletedBy', async function() {
+	it('deleteOneByUser() -> set deletedBy', async function() {
 		const puffy = await TestModel.create({ name: 'Puffy1' });
 
 		const userId = new Types.ObjectId().toString();
-		const success = await puffy.deleteByUser(userId);
+		const result = await puffy.deleteOneByUser(userId);
 
-		expect(success.deletedBy).to.deep.equal({ id: userId });
+		expectOk(result);
+		expectDeletedCount(result, 1);
+
+		const doc = await TestModel.findById(puffy.id).withDeleted().orFail();
+		expect(doc.deletedBy).to.deep.equal({ id: userId });
 	});
 
-	it('restore() -> unset deletedAt', async function() {
+	it('restoreOne() -> unset deletedAt', async function() {
 		const puffy = await TestModel.findOne({ name: 'Puffy1' }).withDeleted().orFail();
-
-		const success = await puffy.restore();
-
-		expect(success.deletedBy).to.not.exist;
+		const doc = await puffy.restoreOne();
+		expect(doc.deletedBy).to.not.exist;
 	});
 });
 
@@ -165,20 +169,22 @@ describe('deletedBy object without alias', function() {
 		await dropModel('TestDeletedByWithoutAlias');
 	});
 
-	it('deleteByUser() -> set deletedBy', async function() {
+	it('deleteOneByUser() -> set deletedBy', async function() {
 		const puffy = await TestModel.create({ name: 'Daffy1' });
 
 		const userId = crypto.randomBytes(10).toString('hex');
-		const success = await puffy.deleteByUser(userId);
+		const result = await puffy.deleteOneByUser(userId);
 
-		expect(success.deletedBy).to.equal(userId);
+		expectOk(result);
+		expectDeletedCount(result, 1);
+
+		const doc = await TestModel.findById(puffy.id).withDeleted().orFail();
+		expect(doc.deletedBy).to.equal(userId);
 	});
 
-	it('restore() -> unset deletedAt', async function() {
+	it('restoreOne() -> unset deletedAt', async function() {
 		const puffy = await TestModel.findOne({ name: 'Daffy1' }).withDeleted().orFail();
-
-		const success = await puffy.restore();
-
-		expect(success.deletedBy).to.not.exist;
+		const doc = await puffy.restoreOne();
+		expect(doc.deletedBy).to.not.exist;
 	});
 });

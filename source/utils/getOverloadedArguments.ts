@@ -1,20 +1,12 @@
-import { Callback, FilterQuery, QueryOptions } from 'mongoose';
+import { UpdateOptions } from 'mongodb';
+import { FilterQuery, MongooseQueryOptions } from 'mongoose';
+
+export interface MongooseUpdateOptions extends UpdateOptions, Omit<MongooseQueryOptions, 'lean'> {}
 
 export default function getOverloadedArguments<T>(
 	filter?: FilterQuery<T>,
-	options?: QueryOptions | null,
-	callback?: Callback
-): [FilterQuery<T>, QueryOptions, Callback | undefined] {
-	if (typeof filter === 'function') {
-		callback = filter;
-		filter = {};
-		options = {};
-	} else if (typeof options === 'function') {
-		callback = options;
-		options = {};
-	}
-
-	const queryOptions = Object.assign({}, options, { timestamps: false });
-
-	return [filter || {}, queryOptions, callback];
+	options?: MongooseUpdateOptions | null,
+): [FilterQuery<T>, MongooseUpdateOptions] {
+	const updateOptions = Object.assign({}, options || {}, { timestamps: false });
+	return [filter || {}, updateOptions];
 }

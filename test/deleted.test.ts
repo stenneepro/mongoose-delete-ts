@@ -1,14 +1,16 @@
 import { expect } from 'chai';
-import { Deleted, DeletedMethods, DeletedQueryHelpers, DeletedStaticMethods } from '../source';
-import { Model } from 'mongoose';
 import { describe } from 'mocha';
+import { Model } from 'mongoose';
+
+import { Deleted, DeletedMethods, DeletedQueryHelpers, DeletedStaticMethods } from '../source';
 import setupModel from './utils/setupModel';
 import dropModel from './utils/dropModel';
 import { expectDeletedCount, expectModifiedCount, expectOk } from './utils/mongooseExpects';
 
 type Test = { name: string } & Deleted;
-type TestQueryHelpers = DeletedQueryHelpers<Test>;
-type TestModel = Model<Test, TestQueryHelpers, DeletedMethods> & DeletedStaticMethods<Test, TestQueryHelpers>;
+type TestQueryHelpers<T extends Test = Test> = DeletedQueryHelpers<T>;
+type TestModel<TRawDocType extends Test = Test> =
+	Model<TRawDocType, TestQueryHelpers<TRawDocType>, DeletedMethods> & DeletedStaticMethods<TRawDocType, TestQueryHelpers<TRawDocType>>;
 
 describe('simple delete', function() {
 	let TestModel: TestModel;
@@ -21,19 +23,26 @@ describe('simple delete', function() {
 		await dropModel('TestSimpleDelete');
 	});
 
-	it('delete() -> set deleted=true', async function() {
+	it('deleteOne() -> set deleted=true', async function() {
 		const puffy = await TestModel.create({ name: 'Puffy1' });
+		const result = await puffy.deleteOne();
 
-		const success = await puffy.delete();
-		expect(success.deleted).to.equal(true);
-		expect(success.deletedAt).to.not.exist;
+		expectOk(result);
+		expectDeletedCount(result, 1);
+
+		const doc = await TestModel.findById(puffy.id).withDeleted().orFail();
+		expect(doc.deleted).to.equal(true);
 	});
 
 	it('deleteOne() -> set deleted=true', async function() {
-		await TestModel.create({ name: 'Puffy2' });
+		const puffy = await TestModel.create({ name: 'Puffy2' });
 		const result = await TestModel.deleteOne({ name: 'Puffy2' });
+
 		expectOk(result);
 		expectDeletedCount(result, 1);
+
+		const doc = await TestModel.findById(puffy.id).withDeleted().orFail();
+		expect(doc.deleted).to.equal(true);
 	});
 
 	it('deleteMany() -> set deleted=true', async function() {
@@ -60,10 +69,10 @@ describe('simple delete', function() {
 		expect(result.deleted).to.equal(true);
 	});
 
-	it('restore() -> set deleted=false', async function() {
+	it('restoreOne() -> set deleted=false', async function() {
 		const puffy = await TestModel.findOne({ name: 'Puffy1' }).withDeleted().orFail();
-		const success = await puffy.restore();
-		expect(success.deleted).to.equal(false);
+		const doc = await puffy.restoreOne();
+		expect(doc.deleted).to.equal(false);
 	});
 
 	it('restoreOne() -> set deleted=false', async function() {
@@ -104,33 +113,38 @@ describe('delete with timestamps', function() {
 		await dropModel('TestDeleteWithTimestamps');
 	});
 
-	it('delete() -> will not change updatedAt', async function() {
+	it('deleteOne() -> will not change updatedAt', async function() {
 		const puffy = await TestModel.create({ name: 'Puffy1' });
 		const updatedAt = new Date(puffy.updatedAt);
 
-		const success = await puffy.delete();
-		expect(success.deleted).to.equal(true);
-		expect(success.updatedAt).to.deep.equal(updatedAt);
+		const result = await puffy.deleteOne();
+		expectOk(result);
+		expectDeletedCount(result, 1);
+
+		const doc = await TestModel.findById(puffy.id).withDeleted().orFail();
+		expect(doc.updatedAt).to.deep.equal(updatedAt);
 	});
 
 	it('deleteOne() -> will not change updatedAt', async function() {
 		const puffy = await TestModel.create({ name: 'Puffy2' });
 		const updatedAt = new Date(puffy.updatedAt);
 
-		await TestModel.deleteOne({ name: 'Puffy2' });
+		const result = await TestModel.deleteOne({ name: 'Puffy2' });
+		expectOk(result);
+		expectDeletedCount(result, 1);
 
-		const result = await TestModel.findOne({ name: 'Puffy2' }).withDeleted().orFail();
-		expect(result.deleted).to.equal(true);
-		expect(result.updatedAt).to.deep.equal(updatedAt);
+		const doc = await TestModel.findById(puffy.id).withDeleted().orFail();
+		expect(doc.deleted).to.equal(true);
+		expect(doc.updatedAt).to.deep.equal(updatedAt);
 	});
 
-	it('restore() -> will not change updatedAt', async function() {
+	it('restoreOne() -> will not change updatedAt', async function() {
 		const puffy = await TestModel.findOne({ name: 'Puffy1' }).withDeleted().orFail();
 		const updatedAt = new Date(puffy.updatedAt);
 
-		const success = await puffy.restore();
-		expect(success.deleted).to.equal(false);
-		expect(success.updatedAt).to.deep.equal(updatedAt);
+		const doc = await puffy.restoreOne();
+		expect(doc.deleted).to.equal(false);
+		expect(doc.updatedAt).to.deep.equal(updatedAt);
 	});
 
 	it('restoreOne() -> will not change updatedAt', async function() {
@@ -158,31 +172,33 @@ describe('delete with validateBeforeDelete', function() {
 		await dropModel('TestValidateBeforeDeleteFalse');
 	});
 
-	it('delete() -> will raise ValidationError error', async function() {
+	it('deleteOne() -> will raise ValidationError error', async function() {
 		const puffy = await TestModelTrue.create({ name: 'Puffy1' });
 		puffy.name = '';
 		try {
-			const doc = await puffy.delete();
-			expect(doc).to.not.exist;
+			const result = await puffy.deleteOne();
+			expectDeletedCount(result, 0);
 		} catch (error: unknown) {
 			expectError(error);
 			expect(error.name).to.equal('ValidationError');
 		}
 	});
 
-	it('delete() -> will not raise ValidationError error', async function() {
+	it('deleteOne() -> will not raise ValidationError error', async function() {
 		const puffy = await TestModelFalse.create({ name: 'Puffy1' });
 		puffy.name = '';
-		const doc = await puffy.delete();
-		expect(doc.deleted).to.equal(true);
+		const result = await puffy.deleteOne();
+		expectOk(result);
+		expectDeletedCount(result, 1);
 	});
 });
 
 describe('deleted schema options', function() {
-	let TestModel: TestModel;
+	type TestDeletedAlias = Test & { readonly destroyed: boolean };
+	let TestModel: TestModel<TestDeletedAlias>;
 
 	before(async function() {
-		TestModel = setupModel<Test, TestModel>('TestSchemaOptions', { name: String }, { deleted: { alias: 'destroyed' } });
+		TestModel = setupModel<TestDeletedAlias, TestModel<TestDeletedAlias>>('TestSchemaOptions', { name: String }, { deleted: { alias: 'destroyed' } });
 	});
 	after(async function() {
 		await dropModel('TestSchemaOptions');
@@ -190,9 +206,13 @@ describe('deleted schema options', function() {
 
 	it('use custom schema alias', async function() {
 		const puffy = await TestModel.create({ name: 'Puffy1' });
-		const result = await puffy.delete();
+		const result = await puffy.deleteOne();
 
-		expect(result.destroyed).to.equal(true);
+		expectOk(result);
+		expectDeletedCount(result, 1);
+
+		const doc = await TestModel.findById(puffy.id).withDeleted().orFail();
+		expect(doc.destroyed).to.equal(true);
 	});
 });
 

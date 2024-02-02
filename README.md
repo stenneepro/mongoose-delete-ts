@@ -1,7 +1,10 @@
-Mongoose Delete TS Plugin
+Mongoose Soft Delete Plugin
 =========
 
-mongoose-delete-ts is simple and lightweight plugin that enables soft deletion of documents in MongoDB. This code is based on plugin [mongoose-delete](https://github.com/dsanel/mongoose-delete). But completely re-written in TypeScript with and using mongoose query helpers. 
+`@stenneepro/mongoose-soft-delete` is a simple and lightweight plugin that enables soft deletion of documents in MongoDB.  
+This code is based on plugin [mongoose-delete](https://github.com/dsanel/mongoose-delete).  
+But completely re-written in TypeScript with and using mongoose query helpers.  
+
 
 [![Build Status](https://github.com/emiljanitzek/mongoose-delete/workflows/Test/badge.svg)](https://github.com/emiljanitzek/mongoose-delete/actions/workflows/test.yml)
 
@@ -28,7 +31,7 @@ mongoose-delete-ts is simple and lightweight plugin that enables soft deletion o
 ## Installation
 Install using [npm](https://npmjs.org)
 ```
-npm install mongoose-delete-ts
+npm install @stenneepro/mongoose-soft-delete
 ```
 
 ## Usage
@@ -38,7 +41,7 @@ We can use this plugin with or without options.
 ### Simple usage
 
 ```typescript
-import mongooseDelete, { DeletedDocument, DeletedModel, DeletedQuery } from 'mongoose-delete-ts';
+import mongooseDelete, { DeletedDocument, DeletedModel, DeletedQuery } from '@stenneepro/mongoose-soft-delete';
 
 type PetDocument = Document & DeletedDocument & { name?: string };
 type PetModel = Model<PetDocument, DeletedQuery> & DeletedModel<PetDocument>;
@@ -70,7 +73,7 @@ const petDocument = await Pet.deleteById(examplePetId);
 ### Save time of deletion
 
 ```typescript
-import mongooseDelete, { DeletedDocument, DeletedAtDocument, DeletedModel, DeletedQuery } from 'mongoose-delete-ts';
+import mongooseDelete, { DeletedDocument, DeletedAtDocument, DeletedModel, DeletedQuery } from '@stenneepro/mongoose-soft-delete';
 
 type PetDocument = Document & DeletedDocument & DeletedAtDocument & { name?: string };
 type PetModel = Model<PetDocument, DeletedQuery> & DeletedModel<PetDocument>;
@@ -100,7 +103,7 @@ await fluffy.restore();
 ### Who has deleted the data?
 
 ```typescript
-import mongooseDelete, { DeletedDocument, DeletedByDocument, DeletedModel, DeletedByModel, DeletedQuery } from 'mongoose-delete-ts';
+import mongooseDelete, { DeletedDocument, DeletedByDocument, DeletedModel, DeletedByModel, DeletedQuery } from '@stenneepro/mongoose-soft-delete';
 
 type PetDocument = Document & DeletedDocument & DeletedByDocument & { name?: string };
 type PetModel = Model<PetDocument, DeletedQuery> & DeletedModel<PetDocument> & DeletedByModel<PetDocument>;
@@ -131,7 +134,7 @@ await fluffy.restore();
 The type for `deletedBy` does not have to be `ObjectId`, you can set a custom type, such as `String`.
 
 ```typescript
-import mongooseDelete, { DeletedDocument, DeletedByDocument, DeletedModel, DeletedByModel, DeletedQuery } from 'mongoose-delete-ts';
+import mongooseDelete, { DeletedDocument, DeletedByDocument, DeletedModel, DeletedByModel, DeletedQuery } from '@stenneepro/mongoose-soft-delete';
 
 type PetDocument = Document & DeletedDocument & DeletedByDocument<string> & { name?: string };
 type PetModel = Model<PetDocument, DeletedQuery> & DeletedModel<PetDocument> & DeletedByModel<PetDocument, string>;
