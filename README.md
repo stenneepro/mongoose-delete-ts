@@ -1,22 +1,25 @@
 Mongoose Soft Delete Plugin
-=========
+===========================
 
 `@stenneepro/mongoose-soft-delete` is a simple and lightweight plugin that enables soft deletion of documents in MongoDB.  
 This code is based on plugin [mongoose-delete](https://github.com/dsanel/mongoose-delete).  
 But completely re-written in TypeScript with and using mongoose query helpers.  
 
+**Note**
+The library is a successor of the existing plugin [mongoose-delete-ts](https://github.com/emiljanitzek/mongoose-delete-ts).  
+I had opened a PR to the existing plugin, but it seems the plugin is not maintained longer.  
 
-[![Build Status](https://github.com/emiljanitzek/mongoose-delete/workflows/Test/badge.svg)](https://github.com/emiljanitzek/mongoose-delete/actions/workflows/test.yml)
+
+[![Build Status](https://github.com/stenneepro/mongoose-soft-delete/workflows/Test/badge.svg)](https://github.com/stenneepro/mongoose-soft-delete/actions/workflows/test.yml)
 
 ## Features
-  - [Overwrite __delete()__ method on document (will not change function signature to keep TypeScript types intact. Does not override standard __remove()__ method)](#simple-usage)
-  - Add deleteByUser() method on document
-  - [Overrides __deleteById()__ static method](#simple-usage)
+  - [Overwrite __deleteOne()__ method on document (will not change function signature to keep TypeScript types intact.](#simple-usage)
+  - Add deleteOneByUser() method on document
   - [Add __deleted__ (true-false) key on document](#simple-usage)
   - [Add __deletedAt__ key to store time of deletion](#save-time-of-deletion)
   - [Add __deletedBy__ key to record who deleted document](#who-has-deleted-the-data)
   - Possibility to use custom key name for deletedAt/deletedBy will add alias to original name
-  - Restore deleted documents using __restore__ method
+  - Restore deleted documents using __restoreOne__ method
   - [Bulk delete and restore](#bulk-delete-and-restore)
   - Override all static methods to exclude deleted documents by default ([Option to not override static methods](#examples-how-to-override-one-or-multiple-methods))
   - Adds query helper `.withDeleted()` to find all documents (even deleted ones)
@@ -26,7 +29,7 @@ But completely re-written in TypeScript with and using mongoose query helpers.
   - [Option to create index on delete fields](#create-index-on-fields) (__deleted__, __deletedAt__, __deletedBy__)
   - Will use $equal operator to find non-deleted documents. If you are adding this plugin to an existing project, make sure to manually update all existing documents with `deleted=false`
   - Overrides all **aggregate** to only include non-deleted documents.
-  - Overrides **populate** to only populate non-deleted documents
+  - Overrides **populate** to only populate non-deleted documents.
 
 ## Installation
 Install using [npm](https://npmjs.org)
@@ -58,15 +61,10 @@ const fluffy = new Pet({ name: 'Fluffy' });
 
 await fluffy.save();
 // mongodb: { deleted: false, name: 'Fluffy' }
-await fluffy.delete();
+await fluffy.deleteOne();
 // mongodb: { deleted: true, name: 'Fluffy' }
-await fluffy.restore();
+await fluffy.restoreOne();
 // mongodb: { deleted: false, name: 'Fluffy' }
-
-const examplePetId = mongoose.Types.ObjectId("53da93b16b4a6670076b16bf");
-
-const petDocument = await Pet.deleteById(examplePetId);
-// mongodb: { deleted: true, name: 'Fluffy', _id: '53da93b1...' }
 ```
 
 
@@ -91,11 +89,10 @@ const fluffy = new Pet({ name: 'Fluffy' });
 await fluffy.save();
 // mongodb: { deleted: false, name: 'Fluffy' }
 
-// note: you should invoke delete() method instead of standard fluffy.remove()
-await fluffy.delete();
+await fluffy.deleteOne();
 // mongodb: { deleted: true, name: 'Fluffy', deletedAt: ISODate("2014-08-01T10:34:53.171Z")}
 
-await fluffy.restore();
+await fluffy.restoreOne();
 // mongodb: { deleted: false, name: 'Fluffy' }
 ```
 
@@ -123,11 +120,11 @@ await fluffy.save();
 
 const idUser = mongoose.Types.ObjectId("53da93b16b4a6670076b16bf");
 
-// note: you should invoke deleteByUser()
-await fluffy.deleteByUser(idUser);
+// note: you should invoke deleteOneByUser()
+await fluffy.deleteOneByUser(idUser);
 // mongodb: { deleted: true, name: 'Fluffy', deletedBy: ObjectId("53da93b16b4a6670076b16bf")}
 
-await fluffy.restore();
+await fluffy.restoreOne();
 // mongodb: { deleted: false, name: 'Fluffy' }
 ```
 
@@ -154,11 +151,11 @@ await fluffy.save();
 
 const idUser = '123456789';
 
-// note: you should invoke deleteByUser()
-await fluffy.deleteByUser(idUser)
+// note: you should invoke deleteOneByUser()
+await fluffy.deleteOneByUser(idUser)
 // mongodb: { deleted: true, name: 'Fluffy', deletedBy: '123456789' }
 
-await fluffy.restore()
+await fluffy.restoreOne()
 ```
 
 ## TypeScript support
@@ -166,9 +163,9 @@ await fluffy.restore()
 ### Document types
 | Type | Adds property | Adds method
 | ---  | --- | ---
-| `DeletedDocument` | `document.deleted` | `document.delete()`, `document.restore()`
+| `DeletedDocument` | `document.deleted` | `document.deleteOne()`, `document.restoreOne()`
 | `DeletedAtDocument` | `document.deletedAt` |
-| `DeletedByDocument<TUser, TDeletedBy = TUser>` | `document.deletedBy` | `document.deleteByUser(...)`
+| `DeletedByDocument<TUser, TDeletedBy = TUser>` | `document.deletedBy` | `document.deleteOneByUser(...)`
 
 ### Model types
 | Type | Adds static methods
@@ -286,7 +283,7 @@ Expects a Mongoose [Schema Types](https://mongoosejs.com/docs/schematypes.html#s
 
 The MIT License
 
-Copyright (c) 2021 Emil Janitzek https://pixel2.se/
+Copyright (c) 2024 Stanislav Protaschuk
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
