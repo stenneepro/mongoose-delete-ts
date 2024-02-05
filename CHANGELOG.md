@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/stenneepro/mongoose-soft-delete/compare/mongoose-soft-delete-v1.1.0...mongoose-soft-delete-v1.1.1) (2024-02-05)
+
+
+### Bug Fixes
+
+* Fix release-please action ([0acf5b7](https://github.com/stenneepro/mongoose-soft-delete/commit/0acf5b71c44645a1fb5d31c20eb80cdb8a0bdd4b))
+
 ## [1.1.0](https://github.com/stenneepro/mongoose-soft-delete/compare/mongoose-soft-delete-v1.0.6...mongoose-soft-delete-v1.1.0) (2024-02-05)
 
 
