@@ -23,7 +23,7 @@ jobs:
       with:
         mongodb-version: ${{ matrix.mongodb-version }}
 
-    - run: yarn
+    - run: yarn --frozen-lockfile
 
     - run: yarn test
 
@@ -39,6 +39,6 @@ jobs:
         with:
           node-version: 20
 
-      - run: yarn
+      - run: yarn --frozen-lockfile
 
       - run: yarn lint
