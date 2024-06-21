@@ -7,7 +7,7 @@ jobs:
       fail-fast: false
       matrix:
         node: [16, 18, 20]
-        mongodb-version: ['4.0', '4.2', '4.4', '5.0', '6.0']
+        mongodb-version: ['5.0', '6.0', '7.0']
     name: Node ${{ matrix.node }} MongoDB ${{ matrix.mongodb-version }}
     steps:
     - name: Git checkout
@@ -19,13 +19,13 @@ jobs:
         node-version: ${{ matrix.node-version }}
 
     - name: Start MongoDB
-      uses: supercharge/mongodb-github-action@1.10.0
+      uses: supercharge/mongodb-github-action@1.11.0
       with:
         mongodb-version: ${{ matrix.mongodb-version }}
 
-    - run: npm install
+    - run: yarn --frozen-lockfile
 
-    - run: npm test
+    - run: yarn test
 
   lint:
     runs-on: ubuntu-latest
@@ -39,6 +39,6 @@ jobs:
         with:
           node-version: 20
 
-      - run: npm install
+      - run: yarn --frozen-lockfile
 
-      - run: npm run lint
+      - run: yarn lint

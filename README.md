@@ -5,7 +5,7 @@ Mongoose Soft Delete Plugin
 This code is based on plugin [mongoose-delete](https://github.com/dsanel/mongoose-delete).  
 But completely re-written in TypeScript with and using mongoose query helpers.  
 
-**Note**
+**Note**  
 The library is a successor of the existing plugin [mongoose-delete-ts](https://github.com/emiljanitzek/mongoose-delete-ts).  
 I had opened a PR to the existing plugin, but it seems the plugin is not maintained longer.  
 
