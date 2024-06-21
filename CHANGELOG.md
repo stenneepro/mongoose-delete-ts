@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/stenneepro/mongoose-soft-delete/compare/mongoose-soft-delete-v1.1.1...mongoose-soft-delete-v1.2.0) (2024-06-21)
+
+
+### Features
+
+* Add globals as dev dependency ([74c8b49](https://github.com/stenneepro/mongoose-soft-delete/commit/74c8b49f54fa4b2f24957f651561013f41c5bd39))
+
 ## [1.1.1](https://github.com/stenneepro/mongoose-soft-delete/compare/mongoose-soft-delete-v1.1.0...mongoose-soft-delete-v1.1.1) (2024-02-05)
 
 
