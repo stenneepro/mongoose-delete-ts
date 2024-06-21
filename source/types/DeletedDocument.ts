@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-empty-interface */
 import { DeletedByMethods, DeletedMethods } from '../methods';
 import Deleted from './Deleted';
 import DeletedAt from './DeletedAt';

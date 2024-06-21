@@ -1,6 +1,6 @@
 {
   "name": "@stenneepro/mongoose-soft-delete",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Mongoose soft delete plugin",
   "author": "Stanislav Protaschuk <stenneepro@gmail.com>",
   "main": "dist/source/index.js",
@@ -12,7 +12,7 @@
     "build": "tsc -b source",
     "build:test": "tsc -b test",
     "prepare": "npm run build",
-    "lint": "eslint source/** test/** --ext .ts"
+    "lint": "eslint source test"
   },
   "repository": {
     "type": "git",
@@ -35,16 +35,19 @@
     "mongoose": "8.x"
   },
   "devDependencies": {
-    "@tsconfig/node20": "~20.1.2",
-    "@types/chai": "~4.3.11",
-    "@types/mocha": "~10.0.6",
-    "@typescript-eslint/eslint-plugin": "~6.18.1",
-    "@typescript-eslint/parser": "~6.18.1",
-    "chai": "~4.4.0",
-    "eslint": "~8.56.0",
-    "mocha": "~10.2.0",
-    "mongoose": "~8.1.1",
+    "@eslint/eslintrc": "^3.1.0",
+    "@eslint/js": "^9.5.0",
+    "@tsconfig/node20": "^20.1.4",
+    "@types/chai": "^4.3.16",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.14.7",
+    "@typescript-eslint/eslint-plugin": "^7.13.1",
+    "@typescript-eslint/parser": "^7.13.1",
+    "chai": "^4.4.1",
+    "eslint": "^9.5.0",
+    "mocha": "^10.4.0",
+    "mongoose": "^8.4.3",
     "ts-node": "^10.9.2",
-    "typescript": "~5.3.3"
+    "typescript": "^5.5.2"
   }
 }
